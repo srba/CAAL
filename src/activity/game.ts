@@ -11,6 +11,29 @@ module Activity {
     import dg = DependencyGraph;
 
     export class Game extends Activity {
+        private $gameType : JQuery;
+        private bisimGame = new BisimGameActivity(this);
+        
+        constructor(container : string, button : string) {
+            super(container, button);
+            this.$gameType = $("#bisim-game-type > select");
+            this.$gameType.on("change", () => this.changedGame());
+        }
+
+        private changedGame() {
+            this.bisimGame.newGame(true, true);
+        }
+
+        onShow(configuration? : any) : void {
+            this.bisimGame.onShow(configuration);
+        }
+
+        onHide() {
+            this.bisimGame.onHide();
+        }
+    }
+    
+    class BisimGameActivity {
         private project : Project;
         private changed : boolean;
         private graph : CCS.Graph;
@@ -34,15 +57,12 @@ module Activity {
         private rightRenderer : Renderer;
         private leftGraph: GUI.ProcessGraphUI;
         private rightGraph: GUI.ProcessGraphUI;
-        
-        constructor(container : string, button : string) {
-            super(container, button);
 
+        constructor(private parentActivity) {
             this.project = Project.getInstance();
             this.fullscreen = new Fullscreen($("#bisim-game-container")[0], $("#bisim-game-fullscreen"), () => this.resize(this.$leftZoom.val(), this.$rightZoom.val()));
             this.tooltip = new TooltipNotation($("#bisim-game-status"));
 
-            this.$gameType = $("#bisim-game-type > select");
             this.$playerType = $("input[name=player-type]");
             this.$leftProcessList = $("#bisim-game-left-process");
             this.$rightProcessList = $("#bisim-game-right-process");
@@ -60,7 +80,6 @@ module Activity {
             this.leftGraph = new GUI.ArborGraph(this.leftRenderer);
             this.rightGraph = new GUI.ArborGraph(this.rightRenderer);
 
-            this.$gameType.on("change", () => this.newGame(true, true));
             this.$playerType.on("change", () => this.newGame(false, false));
             this.$leftProcessList.on("change", () => this.newGame(true, false));
             this.$rightProcessList.on("change", () => this.newGame(false, true));
@@ -95,10 +114,10 @@ module Activity {
             var graph = Main.getGraph();
 
             if (!graph) {
-                this.showExplainDialog("Syntax Error", "Your program contains one or more syntax errors.");
+                this.parentActivity.showExplainDialog("Syntax Error", "Your program contains one or more syntax errors.");
                 return false;
             } else if (graph.getNamedProcesses().length === 0) {
-                this.showExplainDialog("No Named Processes", "There must be at least one named process in the program.");
+                this.parentActivity.showExplainDialog("No Named Processes", "There must be at least one named process in the program.");
                 return false;
             }
 
@@ -173,7 +192,7 @@ module Activity {
             this.$rightProcessList.val(options.rightProcess);
         }
 
-        private newGame(drawLeft : boolean, drawRight : boolean, configuration? : any) : void {
+        public newGame(drawLeft : boolean, drawRight : boolean, configuration? : any) : void {
             var options;
 
             if (configuration) {
@@ -373,7 +392,7 @@ module Activity {
             }
         }
     }
-    
+
     export enum PlayType { Attacker, Defender }
     export enum Move { Right, Left }
     
@@ -401,7 +420,7 @@ module Activity {
         
         private cycleCache : any;
         
-        constructor(private gameActivity : Game, protected graph : CCS.Graph,
+        constructor(private gameActivity : BisimGameActivity, protected graph : CCS.Graph,
             attackerSuccessorGen : CCS.SuccessorGenerator, defenderSuccesorGen : CCS.SuccessorGenerator,
             protected currentLeft : any, protected currentRight : any) {
             super();
@@ -592,7 +611,7 @@ module Activity {
         private bisimilar : boolean;
         private gameType : string;
         
-        constructor(gameActivity : Game, graph : CCS.Graph, attackerSuccessorGen : CCS.SuccessorGenerator, defenderSuccesorGen : CCS.SuccessorGenerator, leftProcessName : string, rightProcessName : string, gameType : string) {
+        constructor(gameActivity : BisimGameActivity, graph : CCS.Graph, attackerSuccessorGen : CCS.SuccessorGenerator, defenderSuccesorGen : CCS.SuccessorGenerator, leftProcessName : string, rightProcessName : string, gameType : string) {
             // stupid compiler
             this.leftProcessName = leftProcessName;
             this.rightProcessName = rightProcessName;
@@ -781,7 +800,7 @@ module Activity {
         
         private $table;
         
-        constructor(playType : PlayType, private gameActivity : Game) {
+        constructor(playType : PlayType, private gameActivity : BisimGameActivity) {
             super(playType);
             
             this.$table = $("#bisim-game-transitions-table").find("tbody");
