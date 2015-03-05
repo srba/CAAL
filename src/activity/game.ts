@@ -39,19 +39,19 @@ module Activity {
             super(container, button);
 
             this.project = Project.getInstance();
-            this.fullscreen = new Fullscreen($("#game-container")[0], $("#game-fullscreen"), () => this.resize(this.$leftZoom.val(), this.$rightZoom.val()));
-            this.tooltip = new TooltipNotation($("#game-status"));
+            this.fullscreen = new Fullscreen($("#bisim-game-container")[0], $("#bisim-game-fullscreen"), () => this.resize(this.$leftZoom.val(), this.$rightZoom.val()));
+            this.tooltip = new TooltipNotation($("#bisim-game-status"));
 
-            this.$gameType = $("#game-type > select");
+            this.$gameType = $("#bisim-game-type > select");
             this.$playerType = $("input[name=player-type]");
-            this.$leftProcessList = $("#game-left-process");
-            this.$rightProcessList = $("#game-right-process");
-            this.$leftContainer = $("#game-left-canvas");
-            this.$rightContainer = $("#game-right-canvas");
-            this.$leftZoom = $("#zoom-left");
-            this.$rightZoom = $("#zoom-right");
-            this.$leftFreeze = $("#freeze-left");
-            this.$rightFreeze = $("#freeze-right");
+            this.$leftProcessList = $("#bisim-game-left-process");
+            this.$rightProcessList = $("#bisim-game-right-process");
+            this.$leftContainer = $("#bisim-game-left-canvas");
+            this.$rightContainer = $("#bisim-game-right-canvas");
+            this.$leftZoom = $("#bisim-game-zoom-left");
+            this.$rightZoom = $("#bisim-game-zoom-right");
+            this.$leftFreeze = $("#bisim-game-freeze-left");
+            this.$rightFreeze = $("#bisim-game-freeze-right");
             this.leftCanvas = <HTMLCanvasElement> this.$leftContainer.find("canvas")[0];
             this.rightCanvas = <HTMLCanvasElement> this.$rightContainer.find("canvas")[0];
 
@@ -329,8 +329,8 @@ module Activity {
         }
 
         private resize(leftZoom : number, rightZoom : number) : void {
-            var offsetTop = $("#game-main").offset().top;
-            var offsetBottom = $("#game-status").height();
+            var offsetTop = $("#bisim-game-main").offset().top;
+            var offsetBottom = $("#bisim-game-status").height();
 
             var availableHeight = window.innerHeight - offsetTop - offsetBottom - 22; // Margin bot + border = 22px.
             
@@ -784,7 +784,7 @@ module Activity {
         constructor(playType : PlayType, private gameActivity : Game) {
             super(playType);
             
-            this.$table = $("#game-transitions-table").find("tbody");
+            this.$table = $("#bisim-game-transitions-table").find("tbody");
         }
         
         protected prepareAttack(choices : any, game : DgGame) : void {
@@ -950,7 +950,7 @@ module Activity {
         private $log : JQuery;
 
         constructor() {
-            this.$log = $("#game-log");
+            this.$log = $("#bisim-game-log");
             this.$log.empty();
         }
 

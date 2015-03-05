@@ -243,36 +243,6 @@ textarea {
     margin-top: 15px;
 }
 
-#game-console{
-    cursor: pointer;
-    max-height: 100px;
-    overflow: hidden;
-}
-
-#game-console ul{
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    font: normal 14px "Inconsolata";            
-    
-}
-
-#game-console li{
-    margin-bottom: 7px;
-}
-
-#game-actions-table-container tbody > tr{
-    cursor: pointer;
-}
-
-#game-mode-dialog-succ-list > .btn-group {
-    width: 100%;    
-}
-
-#game-mode-dialog-succ-list > .btn-group > .btn {
-    border-radius: 6px;
-}
-
 #about-dialog .modal-footer {
     padding: 15px;
     border-top: 1px solid #e5e5e5;
@@ -361,41 +331,71 @@ p.small {
 
 
 /*
- * Game activity styles
+ * Bisim Game activity styles
  */
 
-#game-options {
+#bisim-game-console{
+    cursor: pointer;
+    max-height: 100px;
+    overflow: hidden;
+}
+
+#bisim-game-console ul{
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    font: normal 14px "Inconsolata";            
+    
+}
+
+#bisim-game-console li{
+    margin-bottom: 7px;
+}
+
+#bisim-game-actions-table-container tbody > tr{
+    cursor: pointer;
+}
+
+#bisim-game-mode-dialog-succ-list > .btn-group {
+    width: 100%;    
+}
+
+#bisim-game-mode-dialog-succ-list > .btn-group > .btn {
+    border-radius: 6px;
+}
+
+#bisim-game-options {
     margin-bottom: 20px;
 }
 
-#game-type {
+#bisim-game-type {
     width: 215px;
 }
 
-#game-left {
+#bisim-game-left {
     padding-right: 0;
 }
 
-#game-right {
+#bisim-game-right {
     padding-left: 0;
 }
 
-#game-left button, #game-right button {
+#bisim-game-left button, #bisim-game-right button {
     position: absolute;
     top: 10px;
     right: 10px;
 }
 
-#game-left-canvas, #game-right-canvas {
+#bisim-game-left-canvas, #bisim-game-right-canvas {
     border: 1px solid #e7e7e7;
     overflow: auto;
 }
 
-#game-right-canvas {
+#bisim-game-right-canvas {
     border-left: none;
 }
 
-input[type=range] {
+#bisim-game input[type=range] {
     position: absolute;
     top: 15px;
     left: 10px;
@@ -403,15 +403,15 @@ input[type=range] {
     cursor: pointer;
 }
 
-#game-status .col-md-4 {
+#bisim-game-status .col-md-4 {
     padding-right: 0;
 }
 
-#game-status .col-md-8 {
+#bisim-game-status .col-md-8 {
     padding-left: 0;
 }
 
-#game-log {
+#bisim-game-log {
     height: 225px;
     padding: 10px;
     overflow: auto;
@@ -419,31 +419,31 @@ input[type=range] {
     border-top: none;
 }
 
-#game-log p {
+#bisim-game-log p {
     margin: 0 0 10px 20px;
 }
 
-#game-log p:last-child {
+#bisim-game-log p:last-child {
     margin-bottom: 0;
 }
 
-#game-log p.intro, #game-log p.outro {
+#bisim-game-log p.intro, #bisim-game-log p.outro {
     margin-left: 0;
 }
 
-#game-log p.outro {
+#bisim-game-log p.outro {
     margin-top: 20px;
 }
 
-#game-log h4 {
+#bisim-game-log h4 {
     margin: 20px 0 10px 0;
 }
 
-#game-log .tooltip {
+#bisim-game-log .tooltip {
     font: normal 14px "Inconsolata";
 }
 
-#game-transitions {
+#bisim-game-transitions {
     height: 225px;
     padding: 10px;
     overflow: auto;
@@ -452,39 +452,39 @@ input[type=range] {
     border-left: none;
 }
 
-#game-transitions-table tbody {
+#bisim-game-transitions-table tbody {
     font: normal 14px "Inconsolata";
     cursor: pointer;
 }
 
 @media (max-width: 991px) {
-    #game-type {
+    #bisim-game-type {
         width: 100%;
     }
 
-    #game-left {
+    #bisim-game-left {
         padding-right: 15px;
     }
 
-    #game-right {
+    #bisim-game-right {
         padding-left: 15px;
     }
 
-    #game-right-canvas {
+    #bisim-game-right-canvas {
         border-top: none;
         border-left: 1px solid #e7e7e7;
     }
 
-    #game-transitions {
+    #bisim-game-transitions {
         border-left: 1px solid #e7e7e7;
         margin-bottom: 20px;
     }
 
-    #game-status .col-md-4 {
+    #bisim-game-status .col-md-4 {
         padding-right: 15px;
     }
 
-    #game-status .col-md-8 {
+    #bisim-game-status .col-md-8 {
         padding-left: 15px;
     }
 }
