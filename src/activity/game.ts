@@ -13,6 +13,7 @@ module Activity {
     export class Game extends Activity {
         private $gameType : JQuery;
         private bisimGame = new BisimGameActivity(this);
+        private currentGame : any;
         
         constructor(container : string, button : string) {
             super(container, button);
@@ -20,28 +21,54 @@ module Activity {
             this.$gameType.on("change", () => this.changedGame());
         }
 
-        private changedGame() {
-            this.bisimGame.newGame(true, true);
+        private changedGame(configuration?) {
+            var gameType = this.$gameType.val(),
+                nextGame = this.currentGame;
+            if (gameType === "strong") {
+                //Continue
+                nextGame = this.bisimGame;    
+            } else if (gameType === "weak") {
+                //Continue
+                nextGame = this.bisimGame;
+            } else {
+                console.log("Game type not implemented");
+                return;        
+            }
+
+            configuration = configuration || Object.create(null);
+            configuration.gameType = gameType;
+            nextGame.configure(configuration);
+
+            if (this.currentGame) {
+                this.currentGame.onHide();
+            }
+            if (this.currentGame !== nextGame) {
+                this.currentGame = nextGame;
+                this.currentGame.onShow();
+            }
         }
 
         onShow(configuration? : any) : void {
-            this.bisimGame.onShow(configuration);
+            this.changedGame(configuration);
+            this.bisimGame.onShow();
         }
 
         onHide() {
             this.bisimGame.onHide();
         }
     }
+
+
     
     class BisimGameActivity {
         private project : Project;
-        private changed : boolean;
+        private ccsChanged : boolean;
         private graph : CCS.Graph;
         private succGen : CCS.SuccessorGenerator;
         private dgGame : DgGame;
+        private configuration;
         private fullscreen : Fullscreen;
         private tooltip : TooltipNotation;
-        private $gameType : JQuery;
         private $playerType : JQuery;
         private $leftProcessList : JQuery;
         private $rightProcessList : JQuery;
@@ -80,6 +107,8 @@ module Activity {
             this.leftGraph = new GUI.ArborGraph(this.leftRenderer);
             this.rightGraph = new GUI.ArborGraph(this.rightRenderer);
 
+            this.configuration = {gameType: "strong"};
+
             this.$playerType.on("change", () => this.newGame(false, false));
             this.$leftProcessList.on("change", () => this.newGame(true, false));
             this.$rightProcessList.on("change", () => this.newGame(false, true));
@@ -95,7 +124,7 @@ module Activity {
                 this.$rightZoom.on("input", () => this.resize(this.$leftZoom.val(), this.$rightZoom.val()));
             }
 
-            $(document).on("ccs-changed", () => this.changed = true);
+            $(document).on("ccs-changed", () => this.ccsChanged = true);
         }
 
         private toggleFreeze(graph : GUI.ProcessGraphUI, freeze : boolean, button : JQuery) {
@@ -124,20 +153,41 @@ module Activity {
             return true;
         }
         
-        public onShow(configuration? : any) : void {
+        public configure(configuration) {
+            var configurationChanged = false;
+
+            function overwriteOptions(optionsToSet, newSettings) {
+                for (var option in newSettings) {
+                    if (optionsToSet[option] !== newSettings[option]) {
+                        configurationChanged = true;
+                    }
+                    optionsToSet[option] = newSettings[option];
+                }
+            }
+            overwriteOptions(this.configuration, this.readOptions());
+            overwriteOptions(this.configuration, configuration);
+            if (!this.configuration.gameType) this.configuration.gameType = "strong";
+            
+            this.setOptions(this.configuration);
+
+            if (configurationChanged) {
+                this.newGame(true, true);
+            }
+        }
+
+        public onShow() : void {
             $(window).on("resize", () => this.resize(this.$leftZoom.val(), this.$rightZoom.val()));
             
             this.fullscreen.onShow();
-            
-            if (this.changed || configuration) {
-                this.changed = false;
-                this.graph = this.project.getGraph();
-                this.displayOptions();
-                this.newGame(true, true, configuration);
-            }
-            
             this.tooltip.setGraph(this.graph);
             
+            if (this.ccsChanged) {
+                this.ccsChanged = false;
+                this.graph = this.project.getGraph();
+                this.displayOptions();
+                this.newGame(true, true);
+            }
+
             this.leftGraph.bindCanvasEvents();
             this.rightGraph.bindCanvasEvents();
         }
@@ -166,41 +216,33 @@ module Activity {
             this.$rightProcessList.find("option:nth-child(2)").prop("selected", true);
         }
 
-        private getOptions() : any {
-            return {
-                gameType: this.$gameType.val(),
-                playerType: this.$playerType.filter(":checked").val(),
-                leftProcess: this.$leftProcessList.val(),
-                rightProcess: this.$rightProcessList.val()
-            };
+        private readOptions() : any {
+            var partialConfig = Object.create(null);
+            partialConfig.playerType = this.$playerType.filter(":checked").val();
+            partialConfig.leftProcess = this.$leftProcessList.val();
+            partialConfig.rightProcess = this.$rightProcessList.val();
+            return partialConfig;
         }
 
-        private setOptions(options : any) : void {
-            this.$gameType.find("option[value=" + options.gameType + "]").prop("selected", true);
+        private setOptions(configuration : any) : void {
+            // this.$gameType.find("option[value=" + configuration.gameType + "]").prop("selected", true);
 
             // Bootstrap radio buttons only support changes via click events.
             // Manually handle .active class.
             this.$playerType.each(function() {
-                if ($(this).attr("value") === options.playerType) {
+                if ($(this).attr("value") === configuration.playerType) {
                     $(this).parent().addClass("active");
                 } else {
                     $(this).parent().removeClass("active");
                 }
             });
 
-            this.$leftProcessList.val(options.leftProcess);
-            this.$rightProcessList.val(options.rightProcess);
+            this.$leftProcessList.val(configuration.leftProcess);
+            this.$rightProcessList.val(configuration.rightProcess);
         }
 
-        public newGame(drawLeft : boolean, drawRight : boolean, configuration? : any) : void {
-            var options;
-
-            if (configuration) {
-                options = configuration;
-                this.setOptions(options);
-            } else {
-                options = this.getOptions();
-            }
+        public newGame(drawLeft : boolean, drawRight : boolean) : void {
+            var options = this.configuration;
 
             this.succGen = CCS.getSuccGenerator(this.graph, {succGen: options.gameType, reduce: false});
 
@@ -611,7 +653,12 @@ module Activity {
         private bisimilar : boolean;
         private gameType : string;
         
-        constructor(gameActivity : BisimGameActivity, graph : CCS.Graph, attackerSuccessorGen : CCS.SuccessorGenerator, defenderSuccesorGen : CCS.SuccessorGenerator, leftProcessName : string, rightProcessName : string, gameType : string) {
+        constructor(gameActivity : BisimGameActivity,
+                    graph : CCS.Graph, attackerSuccessorGen : CCS.SuccessorGenerator,
+                    defenderSuccesorGen : CCS.SuccessorGenerator,
+                    leftProcessName : string,
+                    rightProcessName : string,
+                    gameType : string) {
             // stupid compiler
             this.leftProcessName = leftProcessName;
             this.rightProcessName = rightProcessName;
