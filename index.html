@@ -360,19 +360,8 @@
         <div id="hml-game-container" class="container">
             <div id="hml-game-options" class="row">
                 <div class="col-md-12">
-                    <select id="hml-game-type" class="form-control">
-                        <option value="strong" selected>Strong Logic</option>
-                        <option value="weak">Weak Logic</option>
-                    </select>
-                    <select id="hml-game-left-process" class="form-control"></select>
-                    <select id="hml-game-right-process" class="form-control"></select>
-                    <div class="btn-group" data-toggle="buttons">
-                        <label class="btn btn-default">
-                            <input name="player-type" value="attacker" type="radio"> Attacker
-                        </label>
-                        <label class="btn btn-default active">
-                            <input name="player-type" value="defender" type="radio" checked> Defender
-                        </label>
+                    <div id="hml-game-inject-options" style="display: inline-block;">
+                        <!-- Controls are dynamically added and removed here -->
                     </div>
                     <div class="btn-group">
                         <button id="hml-game-restart" type="button" class="btn btn-default">Restart</button>

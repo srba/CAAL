@@ -20,7 +20,7 @@
     float: left;
 }
 
-#hml-game-left-process, #hml-game-right-process {
+#hml-game-process, #hml-game-formula {
     width: 150px;
     float: left;
 }
@@ -39,14 +39,11 @@
     right: 10px;
 }
 
-#hml-game-left-canvas, #hml-game-right-canvas {
+#hml-game-left-canvas {
     border: 1px solid #e7e7e7;
     overflow: auto;
 }
 
-#hml-game-right-canvas {
-    border-left: none;
-}
 
 #hml-game-status .col-md-4 {
     padding-right: 0;
@@ -99,7 +96,7 @@
 }
 
 @media (max-width: 991px) {
-    #hml-game-type, #hml-game-left-process, #hml-game-right-process {
+    #hml-game-type, #hml-game-process, #hml-game-formula {
         width: 100%;
     }
 
@@ -111,9 +108,8 @@
         padding-left: 15px;
     }
 
-    #hml-game-right-canvas {
+    #hml-game-left-canvas {
         border-top: none;
-        border-left: 1px solid #e7e7e7;
     }
 
     #hml-game-transitions {
