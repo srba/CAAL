@@ -1,5 +1,6 @@
 //# sourceMappingURL=main.js.map
 /// <reference path="../lib/jquery.d.ts" />
+/// <reference path="../lib/jquery-ui.d.ts" />
 /// <reference path="../lib/bootstrap.d.ts" />
 /// <reference path="../lib/ace.d.ts" />
 /// <reference path="../lib/ccs.d.ts" />
@@ -34,7 +35,7 @@ module Main {
         activityHandler.addActivity("game" , new Activity.Game("#game-container", "#game-btn"));
         activityHandler.addActivity("hmlgame" , new Activity.HmlGame("#hml-game-container", "#hml-game-btn"));
         activityHandler.selectActivity("editor");
-
+		  
         $("#version").append(Version);
 
         new New("#new-btn", activityHandler);

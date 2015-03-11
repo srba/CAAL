@@ -26,14 +26,11 @@
 }
 
 #hml-game-left {
-    padding-right: 0;
+    padding-right: none;
 }
 
-#hml-game-right {
-    padding-left: 0;
-}
 
-#hml-game-left button, #hml-game-right button {
+#hml-game-left button{
     position: absolute;
     top: 10px;
     right: 10px;
@@ -44,8 +41,9 @@
     overflow: auto;
 }
 
-
 #hml-game-status .col-md-4 {
+	border:0 !important; 
+	border-right:0 solid #333 !important;
     padding-right: 0;
 }
 
@@ -55,6 +53,7 @@
 
 #hml-game-status .tooltip, #hml-game-transitions-table tbody {
     font: normal 14px "Inconsolata";
+	overflow:auto;
     color: #333;
 }
 

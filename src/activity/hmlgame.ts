@@ -110,6 +110,22 @@ module Activity {
 
             this.constructOptionsDom();
 
+            var leftSide = $("#leftSide");
+            var rightSide = $("#rightSide");
+						
+			$(leftSide).resizable({
+				handles: 'e',
+				minWidth: 320,
+				maxWidth: 600,
+				resize: function(event, ui){
+					
+					var currentWidth = (leftSide.width());
+					$(this).width(currentWidth);
+					
+					$("#rightSide").width(c.width() - currentWidth);
+					console.log(c.height() + " + " + c.width());
+				} 
+			});
 
             // Use onchange instead of oninput for IE.
             var zoomEvent = (navigator.userAgent.indexOf("MSIE ") > 0 || 
