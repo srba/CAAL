@@ -318,6 +318,10 @@ module CCS {
             return this.processes[result.id] = result;
         }
 
+        addProcess(process) : void {
+            this.processes[process.id] = process;
+        }
+
         newCollapsedProcess(subProcesses : Process[]) {
             var newProcesses = subProcesses.slice(0);
             newProcesses.sort();
