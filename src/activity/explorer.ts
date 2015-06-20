@@ -14,7 +14,6 @@ module Activity {
 
     export class Explorer extends Activity {
         private graph : CCS.Graph;
-        private succGenerator : CCS.SuccessorGenerator;
         private selectedProcess : CCS.Process;
         private lastSelectedProcess: CCS.Process;
         private fullscreen : Fullscreen;
@@ -33,6 +32,10 @@ module Activity {
         private renderer: Renderer;
         private uiGraph: GUI.ProcessGraphUI;
         private options : any;
+
+        private tableSuccGen : CCS.SuccessorGenerator;
+        private graphSuccGen : CCS.SuccessorGenerator;
+        private strictPathSuccGen : CCS.SuccessorGenerator;
 
         constructor(container : string, button : string) {
             super(container, button);
@@ -161,7 +164,8 @@ module Activity {
             var options = {
                 process: $("#explorer-process-list :selected").text(),
                 simplify: $("#option-simplify").prop("checked"),
-                inputMode: InputMode[this.project.getInputMode()]
+                inputMode: InputMode[this.project.getInputMode()],
+                useStrictPath: $("#option-use-strict-path").prop("checked")
             };
 
             if (this.project.getInputMode() === InputMode.CCS) {
@@ -181,20 +185,36 @@ module Activity {
             this.resize(1);
 
             var options = this.getOptions();
-            this.succGenerator = CCS.getSuccGenerator(this.graph,
-                {inputMode: options.inputMode, succGen: options.successor, reduce: options.simplify});
-            var process = this.succGenerator.getProcessByName(options.process);
+
+            this.tableSuccGen = CCS.getSuccGenerator(this.graph, {inputMode: options.inputMode, succGen: options.successor, reduce: options.simplify});
+
+            this.strictPathSuccGen = null;
+            if (options.useStrictPath && options.successor === "weak") {
+                this.strictPathSuccGen = this.tableSuccGen;
+            }
+
+            if (options.successor !== "weak" || options.useStrictPath) {
+                this.graphSuccGen = CCS.getSuccGenerator(this.graph, {inputMode: options.inputMode, succGen: "strong", reduce: options.simplify});
+            } else {
+                this.graphSuccGen = this.tableSuccGen;
+            }
+
+            var process = this.tableSuccGen.getProcessByName(options.process);
 
             if (this.project.getInputMode() === InputMode.CCS) {
                 if (options.collapse !== "none") {
                     try {
+                        this.strictPathSuccGen = null;
                         //Always attack with strong succ generator (improves performance)
                         var attackSuccGen = CCS.getSuccGenerator(this.graph, {succGen: "strong", reduce: options.simplify});
                         var defendSuccGen = CCS.getSuccGenerator(this.graph, {succGen: options.collapse, reduce: options.simplify});
                         var collapse = Equivalence.getBisimulationCollapse(attackSuccGen, defendSuccGen, process.id, process.id);
-                        var collapseSuccGen = new Traverse.CollapsingSuccessorGenerator(this.succGenerator, collapse);
-                        //Wrap the transition relation used in the collapse.
-                        this.succGenerator = collapseSuccGen;
+
+                        //Wrap in collapse
+                        var collapseSuccGen = new Traverse.CollapsingSuccessorGenerator(this.tableSuccGen, collapse);
+                        this.tableSuccGen = collapseSuccGen;
+                        this.graphSuccGen = new Traverse.CollapsingSuccessorGenerator(this.graphSuccGen, collapse);
+
                         //Process have been replaced by collapse.
                         process = collapseSuccGen.getCollapseForProcess(process.id);
                     } catch (err) {
@@ -209,7 +229,7 @@ module Activity {
                     }
                 }
             } else {
-                this.succGenerator = CCS.getSuccGenerator(this.graph,
+                this.tableSuccGen = this.graphSuccGen = CCS.getSuccGenerator(this.graph,
                     {inputMode: options.inputMode, time: options.time, succGen: options.successor, reduce: options.simplify});
             }
 
@@ -257,7 +277,7 @@ module Activity {
         private expand(process : CCS.Process) : void {
             this.selectedProcess = process;
 
-            var allTransitions = CCS.getNSuccessors(this.succGenerator, process, this.$depth.val());
+            var allTransitions = CCS.getNSuccessors(this.graphSuccGen, process, this.$depth.val());
             var data = this.uiGraph.getProcessDataObject(process.id.toString());
 
             if (!data || data.status === "unexpanded") {
@@ -278,20 +298,21 @@ module Activity {
                 }
             }
 
-            this.updateStatusTable(allTransitions[process.id]);
+            this.updateStatusTable(process);
             this.uiGraph.setSelected(process.id.toString());
             this.centerProcess(process);
         }
 
-        private updateStatusTable(transitions : CCS.Transition[]) : void {
+        private updateStatusTable(process : CCS.Process) : void {
             this.$statusTable.empty();
 
+            var transitions = this.tableSuccGen.getSuccessors(process.id);
             transitions.forEach(t => {
                 var row = $("<tr>");
                 var $actionTd = $("<td>");
                 
-                if (this.succGenerator instanceof Traverse.AbstractingSuccessorGenerator) {
-                    var abstractingSuccGen = <Traverse.AbstractingSuccessorGenerator>this.succGenerator;
+                if (this.tableSuccGen instanceof Traverse.AbstractingSuccessorGenerator) {
+                    var abstractingSuccGen = <Traverse.AbstractingSuccessorGenerator>this.tableSuccGen;
                     var $action = Tooltip.wrap(t.action.toString(true));
                     Tooltip.setTooltip($action, Tooltip.strongSequence(abstractingSuccGen, this.selectedProcess, t.action, t.targetProcess, this.graph));
                     $actionTd.append($action);
@@ -333,7 +354,7 @@ module Activity {
 
             if (entering) {
                 var targetId = $(event.currentTarget).data("targetId");
-                if (this.options.successor === "weak") {
+                if (this.strictPathSuccGen) {
                     var action = $(event.currentTarget).data("action");
                     this.highlightStrictPath(action, targetId);
                 } else {
@@ -343,7 +364,8 @@ module Activity {
         }
 
         private highlightStrictPath(action, toTargetId) {
-            var strictPath = (<Traverse.AbstractingSuccessorGenerator>this.succGenerator).
+            //Use tableSuccGen since graph may use strict
+            var strictPath = (<Traverse.AbstractingSuccessorGenerator>this.strictPathSuccGen).
                     getStrictPath(this.selectedProcess.id, action, toTargetId);
             var from = this.selectedProcess.id;
             GUI.highlightTransitions(this.uiGraph, this.selectedProcess.id, strictPath);
